@@ -1,0 +1,22 @@
+{
+    "name": "ollyo/event-mangement",
+    "description": "Ollyo Task Assesment",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/",
+            "Config\\":  "config/"
+        },
+        "files": [
+            "src/Helpers/CommonFunctions.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Tahmid Ziko",
+            "email": "tahmdziko@gmail.com"
+        }
+    ],
+    "require": {},
+    "minimum-stability": "stable"
+}
