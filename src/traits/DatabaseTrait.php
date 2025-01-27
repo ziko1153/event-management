@@ -19,7 +19,7 @@ trait DatabaseTrait
         try {
             return $callback($connection);
         } catch (\PDOException $e) {
-            throw new DatabaseException("Database error in table '{$this->table}': " . $e->getMessage(), $e->getCode(), $e);
+            throw new DatabaseException("Database error in table '{$this->table}': " . $e->getMessage(), (int) $e->getCode(), $e);
         } finally {
             $db->releaseConnection($connection);
         }
@@ -146,6 +146,36 @@ trait DatabaseTrait
             $stmt = $connection->prepare($query);
             $stmt->execute($params);
             return $stmt->fetchAll();
+        });
+    }
+
+    public function bulkInsert(array $data): int
+    {
+        return $this->withConnection(function (PDO $connection) use ($data) {
+            if (empty($data)) {
+                throw new \InvalidArgumentException("No data provided for bulk insert.");
+            }
+
+            $columns = array_keys($data[0]);
+            $columnList = implode(',', $columns);
+
+            $placeholders = [];
+            $flatValues = [];
+            foreach ($data as $row) {
+                $row = array_map(function ($value) {
+                    return is_bool($value) ? (int)$value : $value;
+                }, $row);
+
+                $placeholders[] = '(' . implode(',', array_fill(0, count($row), '?')) . ')';
+                $flatValues = array_merge($flatValues, array_values($row));
+            }
+
+            $query = "INSERT INTO {$this->table} ($columnList) VALUES " . implode(',', $placeholders);
+
+            $stmt = $connection->prepare($query);
+            $stmt->execute($flatValues);
+
+            return $stmt->rowCount();
         });
     }
 }

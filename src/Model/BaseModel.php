@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Model;
+
 use App\Exception\DatabaseException;
 use App\Traits\DatabaseTrait;
 
