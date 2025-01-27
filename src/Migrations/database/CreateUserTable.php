@@ -29,6 +29,8 @@ class CreateUserTable implements MigrationInterface
             role ENUM($enumValues) NOT NULL DEFAULT '$defaultRole',
             status BOOLEAN NOT NULL DEFAULT 1,
             email_verified_at TIMESTAMP NULL,
+            reset_token VARCHAR(100) NULL,
+            reset_token_expires_at TIMESTAMP NULL,
             remember_token VARCHAR(100) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

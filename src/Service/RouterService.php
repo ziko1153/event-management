@@ -5,7 +5,7 @@ namespace App\Service;
 class RouterService
 {
     private array $routes = [];
-    private array $middlewareStack = [];
+    private ?array $lastRoute = null;
     private ?string $currentGroupPrefix = null;
 
     public function get(string $path, array $action): self
@@ -20,13 +20,11 @@ class RouterService
 
     public function middleware(array $middleware): self
     {
-        $lastMethod = array_key_last($this->routes);
-        $lastPath = array_key_last($this->routes[$lastMethod]);
-
-        $this->routes[$lastMethod][$lastPath]['middleware'] = array_merge(
-            $this->routes[$lastMethod][$lastPath]['middleware'] ?? [],
-            $middleware
-        );
+        if ($this->lastRoute) {
+            $method = $this->lastRoute['method'];
+            $path = $this->lastRoute['path'];
+            $this->routes[$method][$path]['middleware'] = $middleware;
+        }
 
         return $this;
     }
@@ -73,10 +71,10 @@ class RouterService
 
         $params = $this->extractParams($uri, $route['path']);
         $queryParams = $_GET;
+        $postParams = $_POST;
 
-        // Merge all request parameters
-        $allParams = array_merge($params, $queryParams);
 
+        $allParams = array_merge($params, $queryParams, $postParams);
         $this->runMiddleware($route['middleware'], $allParams);
         $this->executeHandler($route['action'], $allParams);
     }
@@ -87,8 +85,14 @@ class RouterService
         $this->routes[$method][$path] = [
             'path' => $path,
             'action' => $action,
-            'middleware' => $this->middlewareStack,
+            'middleware' => [],
         ];
+
+        $this->lastRoute = [
+            'method' => $method,
+            'path' => $path
+        ];
+
 
         return $this;
     }
@@ -151,7 +155,7 @@ class RouterService
         foreach ($middleware as $middlewareClass) {
             $middlewareInstance = new $middlewareClass();
             if (!$middlewareInstance->handle($params)) {
-                $this->handleError(403);
+                $this->handleError(403, 'route mismatch, please write correct one');
                 exit;
             }
         }

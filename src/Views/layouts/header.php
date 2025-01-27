@@ -46,12 +46,14 @@
                     <li class="nav-item"><a class="nav-link" href="#">Events</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
                 </ul>
-                <div class="d-flex">
-                    <button class="btn btn-light me-2" data-bs-toggle="modal"
-                        data-bs-target="#loginModal">Login</button>
-                    <button class="btn btn-success" data-bs-toggle="modal"
-                        data-bs-target="#registerModal">Register</button>
-                </div>
+                <?php if (!isset($_SESSION['user'])): ?>
+                    <div class="d-flex">
+                        <a href="/login" class="btn btn-light me-2">Login</a>
+                        <a href="/register" class="btn btn-success">Register</a>
+                    </div>
+
+                <?php endif ?>
+
             </div>
         </div>
     </nav>
