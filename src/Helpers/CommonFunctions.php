@@ -11,9 +11,9 @@ if (!function_exists('env')) {
 }
 
 if (!function_exists('view')) {
-    function view(string $view, array $data = [])
+    function view(string $view, array $data = [], string $layout = 'main')
     {
-        View::render($view, $data);
+        View::render($view, $data, $layout);
     }
 }
 

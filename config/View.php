@@ -2,10 +2,9 @@
 
 namespace Config;
 
-
 class View
 {
-    public static function render(string $view, array $data = []): void
+    public static function render(string $view, array $data = [], string $layout = 'main'): void
     {
         extract($data);
         $viewFile = __DIR__ . '/../src/Views/' . $view . '.php';
@@ -17,6 +16,12 @@ class View
         ob_start();
         require $viewFile;
         $content = ob_get_clean();
-        require __DIR__ . '/../src/Views/layouts/main.php';
+
+        $layoutFile = __DIR__ . '/../src/Views/layouts/' . $layout . '.php';
+        if (!file_exists($layoutFile)) {
+            throw new \Exception("Layout file '{$layout}.php' not found.");
+        }
+
+        require $layoutFile;
     }
 }
