@@ -34,6 +34,15 @@ trait DatabaseTrait
         });
     }
 
+    public function findByColumn(string $column, string $value): ?array
+    {
+        return $this->withConnection(function (PDO $connection) use ($column, $value) {
+            $stmt = $connection->prepare("SELECT * FROM {$this->table} WHERE {$column} = :{$column}");
+            $stmt->execute([":{$column}" => $value]);
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        });
+    }
+
     public function findAll(array $criteria = []): array
     {
         return $this->withConnection(function (PDO $connection) use ($criteria) {
@@ -55,6 +64,27 @@ trait DatabaseTrait
         });
     }
 
+    public function count(array $conditions = []): int
+    {
+        return $this->withConnection(function (PDO $connection) use ($conditions) {
+            $query = "SELECT COUNT(*) FROM {$this->table}";
+            $params = [];
+
+            if (!empty($conditions)) {
+                $whereClauses = [];
+                foreach ($conditions as $key => $value) {
+                    $whereClauses[] = "$key = :$key";
+                    $params[":$key"] = $value;
+                }
+                $query .= " WHERE " . implode(' AND ', $whereClauses);
+            }
+
+            $stmt = $connection->prepare($query);
+            $stmt->execute($params);
+            return (int) $stmt->fetchColumn();
+        });
+    }
+
     public function create(array $data): int
     {
         return $this->withConnection(function (PDO $connection) use ($data) {
@@ -73,15 +103,18 @@ trait DatabaseTrait
     {
         return $this->withConnection(function (PDO $connection) use ($id, $data) {
             $setClauses = [];
+            $params = [];
+            
             foreach ($data as $key => $value) {
-                $setClauses[] = "$key = :$key";
+                $setClauses[] = "$key = :set_$key";
+                $params["set_$key"] = $value;
             }
 
             $query = "UPDATE {$this->table} SET " . implode(', ', $setClauses) . " WHERE id = :id";
-            $data['id'] = $id;
+            $params['id'] = $id;
 
             $stmt = $connection->prepare($query);
-            return $stmt->execute($data);
+            return $stmt->execute($params);
         });
     }
 

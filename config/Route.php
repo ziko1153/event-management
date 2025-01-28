@@ -2,6 +2,9 @@
 
 namespace Config;
 
+use App\Controllers\Admin\AdminController;
+use App\Controllers\Admin\EventController;
+use App\Middleware\AdminMiddleware;
 use App\Service\RouterService;
 use App\Middleware\AuthMiddleware;
 use App\Controllers\AuthController;
@@ -29,6 +32,32 @@ $router->post('/register', [AuthController::class, 'register']);
 
 $router->get('/logout', [AuthController::class, 'logout'])->middleware([AuthMiddleware::class]);
 
+
+
+// Admin Routes
+$router->get('/admin/dashboard', [AdminController::class, 'dashboard'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/events', [EventController::class, 'getEvents'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+
+
+//======================================= Event Route
+$router->get('/admin/events/create', [EventController::class, 'create'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/events/create', [EventController::class, 'store'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/events/update/{slug}', [EventController::class, 'edit'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/events/update/{slug}', [EventController::class, 'update'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/events/delete/{slug}', [EventController::class, 'delete'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/events/search-organizers', [EventController::class, 'searchOrganizers'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+//========================================== END: EVENT ROUTE
+
+// $router->get('/admin/categories', [CategoryController::class, 'index'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+// $router->post('/admin/categories', [CategoryController::class, 'store'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/users', [AdminController::class, 'users'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/users', [AdminController::class, 'storeUser'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+
+// Admin profile routes
+$router->get('/admin/profile', [AdminController::class, 'profile'])->middleware([AuthMiddleware::class]);
+$router->post('/admin/profile', [AdminController::class, 'updateProfile'])->middleware([AuthMiddleware::class]);
+$router->get('/admin/profile/password', [AdminController::class, 'changePassword'])->middleware([AuthMiddleware::class]);
+$router->post('/admin/profile/password', [AdminController::class, 'updatePassword'])->middleware([AuthMiddleware::class]);
 
 
 $router->dispatch();

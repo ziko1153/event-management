@@ -15,6 +15,7 @@ class EventSeeder
         $events = [
             [
                 'created_by' => 3,
+                'organizer_id' => 3,
                 'title' => 'Tech Conference 2025',
                 'thumbnail' => '/events/event1.png',
                 'slug' => 'tech-conference-2025',
@@ -30,10 +31,10 @@ class EventSeeder
                 'event_type' => EventTypeEnum::CONFERENCE->value,
                 'status' => EventStatusEnum::PUBLISHED->value,
                 'is_featured' => true,
-                'is_private' => false,
             ],
             [
                 'created_by' => 4,
+                'organizer_id' => 4,
                 'title' => 'Music Festival 2025',
                 'thumbnail' => '/events/event2.png',
                 'slug' => 'music-festival-2025',
@@ -49,7 +50,6 @@ class EventSeeder
                 'event_type' => EventTypeEnum::OTHER->value,
                 'status' => EventStatusEnum::PUBLISHED->value,
                 'is_featured' => false,
-                'is_private' => false,
             ],
         ];
 
