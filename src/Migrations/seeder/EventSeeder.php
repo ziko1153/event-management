@@ -6,55 +6,94 @@ use App\Enums\EventStatusEnum;
 use App\Enums\EventTypeEnum;
 use App\Model\Event;
 use App\Model\EventCategory;
+use DateTime;
 
 class EventSeeder
 {
-    public function run(): void
+    private array $eventTitles = [
+        'Tech Conference',
+        'Music Festival',
+        'Sports Tournament',
+        'Art Exhibition',
+        'Food Festival',
+        'Business Summit',
+        'Gaming Convention',
+        'Science Fair',
+        'Film Festival',
+        'Cultural Festival',
+        'Book Fair',
+        'Career Fair'
+    ];
+
+    private array $cities = [
+        'Dhaka',
+        'Chittagong',
+        'Sylhet',
+        'Rajshahi',
+        'Khulna',
+        'Barisal',
+        'Rangpur',
+        "Cox\'s Bazar",
+        'Mymensingh',
+        'Comilla'
+    ];
+
+    private array $venues = [
+        'International Convention City Bashundhara',
+        'Bangabandhu International Conference Center',
+        'Bangladesh Army Stadium',
+        'Sher-e-Bangla National Cricket Stadium',
+        'National Parliament House',
+        'Bangladesh China Friendship Conference Center',
+        'Sheikh Kamal International Cricket Stadium',
+        'Sylhet International Cricket Stadium',
+        'MA Aziz Stadium',
+        'Shaheed Suhrawardy Indoor Stadium'
+    ];
+
+    public function run(int $count = 100): void
     {
         $eventModel = new Event();
-        $events = [
-            [
-                'created_by' => 3,
-                'organizer_id' => 3,
-                'title' => 'Tech Conference 2025',
-                'thumbnail' => '/events/event1.png',
-                'slug' => 'tech-conference-2025',
-                'description' => 'An amazing tech conference.',
-                'location' => 'San Francisco, CA',
-                'venue_details' => 'Moscone Center, Hall A',
-                'start_date' => '2025-09-15 09:00:00',
-                'end_date' => '2025-09-17 17:00:00',
-                'registration_deadline' => '2025-09-10 23:59:59',
-                'max_capacity' => 500,
-                'current_capacity' => 250,
-                'ticket_price' => 199.99,
-                'event_type' => EventTypeEnum::CONFERENCE->value,
+        $events = [];
+        $startDate = new DateTime();
+        $startDate->modify('+1 month');
+        $eventTypes = EventTypeEnum::getEventEnum();
+
+        for ($i = 1; $i <= $count; $i++) {
+            $title = $this->eventTitles[array_rand($this->eventTitles)] . ' ' . date('Y');
+            $eventType = array_rand(EventTypeEnum::getEventEnum());
+            $startDate->modify('+' . rand(1, 7) . ' days');
+            $endDate = clone $startDate;
+            $endDate->modify('+' . rand(1, 3) . ' days');
+            $regDeadline = clone $startDate;
+            $regDeadline->modify('-' . rand(2, 10) . ' days');
+
+            $maxCapacity = rand(100, 1000);
+            $currentCapacity = rand(0, $maxCapacity);
+            $eventType = $eventTypes[array_rand($eventTypes)];
+
+            $events[] = [
+                'created_by' => rand(3, 4),
+                'organizer_id' => rand(3, 4),
+                'title' => $title . ' #' . $i,
+                'thumbnail' => '/events/event' . rand(1, 2) . '.png',
+                'slug' => strtolower(str_replace(' ', '-', $title)) . '-' . $i,
+                'description' => 'Join us for the exciting ' . strtolower($title) . ' featuring the best of Bangladesh.',
+                'location' => $this->cities[array_rand($this->cities)],
+                'venue_details' => $this->venues[array_rand($this->venues)],
+                'start_date' => $startDate->format('Y-m-d H:i:s'),
+                'end_date' => $endDate->format('Y-m-d H:i:s'),
+                'registration_deadline' => $regDeadline->format('Y-m-d H:i:s'),
+                'max_capacity' => $maxCapacity,
+                'current_capacity' => $currentCapacity,
+                'ticket_price' => rand(500, 5000) . '.00',
+                'event_type' => $eventType,
                 'status' => EventStatusEnum::PUBLISHED->value,
-                'is_featured' => true,
-            ],
-            [
-                'created_by' => 4,
-                'organizer_id' => 4,
-                'title' => 'Music Festival 2025',
-                'thumbnail' => '/events/event2.png',
-                'slug' => 'music-festival-2025',
-                'description' => 'The best music festival of the year.',
-                'location' => 'Austin, TX',
-                'venue_details' => 'Zilker Park',
-                'start_date' => '2025-10-10 10:00:00',
-                'end_date' => '2025-10-12 23:59:59',
-                'registration_deadline' => '2025-10-05 23:59:59',
-                'max_capacity' => 1000,
-                'current_capacity' => 500,
-                'ticket_price' => 299.99,
-                'event_type' => EventTypeEnum::OTHER->value,
-                'status' => EventStatusEnum::PUBLISHED->value,
-                'is_featured' => false,
-            ],
-        ];
+                'is_featured' => (rand(1, 10) > 8),
+            ];
+        }
 
         $eventModel->bulkInsert($events);
-
         echo count($events) . " events seeded successfully.\n";
 
         $this->eventCategories();

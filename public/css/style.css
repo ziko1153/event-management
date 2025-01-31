@@ -1,0 +1,100 @@
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(225, 129, 129, 0.5), rgba(210, 72, 245, 0.5)), url('/img/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* Search Form */
+.search-form {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Event Cards */
+.event-card {
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover .event-image {
+    transform: scale(1.05);
+}
+
+/* Badges and Tags */
+.featured-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 193, 7, 0.9);
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+.countdown-timer {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+.price-tag {
+    padding: 3px 8px;
+    border-radius: 20px;
+    color: white;
+    font-size: 0.8rem;
+}
+
+/* Capacity Indicator */
+.capacity-wrapper {
+    font-size: 0.8rem;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 40vh;
+    }
+
+    .search-form {
+        padding: 1rem !important;
+    }
+
+    .event-image {
+        height: 150px;
+    }
+}

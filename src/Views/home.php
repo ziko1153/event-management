@@ -1,60 +1,103 @@
- <!-- Hero Section -->
- <header class="hero-section text-center py-5">
-     <div class="container">
-         <h1 class="display-4">Discover Amazing Events</h1>
-         <p class="lead">Find and book tickets to the most exciting events near you</p>
+<header class="hero-section position-relative overflow-hidden">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative z-3 py-5">
+        <div class="row min-vh-50 align-items-center">
+            <div class="col-lg-8 mx-auto text-center text-white">
+                <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInUp">Discover Extraordinary Events
+                </h1>
+                <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">Your gateway to unforgettable
+                    experiences and memorable moments</p>
 
-         <!-- Event Search -->
-         <form class="row g-2 justify-content-center mt-4">
-             <div class="col-auto col-md-4">
-                 <input type="text" class="form-control" placeholder="Search events...">
-             </div>
-             <div class="col-auto">
-                 <button type="submit" class="btn btn-primary">
-                     <i class="fas fa-search"></i> Search
-                 </button>
-             </div>
-         </form>
-     </div>
- </header>
+                <!-- Enhanced Search Form -->
+                <form action="/events/search" method="GET"
+                    class="search-form p-2 bg-white rounded-4 shadow-lg animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-0">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" name="keyword" class="form-control border-0"
+                                    placeholder="Search events...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Search Events</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
 
- <!-- Featured Events -->
- <section class="py-5 bg-light">
-     <div class="container">
-         <h2 class="text-center mb-4">Featured Events</h2>
-         <div class="row">
-             <div class="col-md-4 mb-3">
-                 <div class="card featured-event-card">
-                     <img src="https://images.unsplash.com/photo-1501612780327-45c538c3b35f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-                         class="card-img-top event-image" alt="Music Festival">
-                     <div class="card-body">
-                         <h5 class="card-title">Music Festival 2024</h5>
-                         <p class="card-text">Join us for an incredible music experience!</p>
-                         <a href="#" class="btn btn-primary">View Details</a>
-                     </div>
-                 </div>
-             </div>
-             <div class="col-md-4 mb-3">
-                 <div class="card featured-event-card">
-                     <img src="/img/events/event1.png" class="card-img-top event-image" alt="Tech Conference">
-                     <div class="card-body">
-                         <h5 class="card-title">Tech Conference</h5>
-                         <p class="card-text">Discover the latest in technology trends!</p>
-                         <a href="#" class="btn btn-primary">View Details</a>
-                     </div>
-                 </div>
-             </div>
-             <div class="col-md-4 mb-3">
-                 <div class="card featured-event-card">
-                     <img src="https://images.unsplash.com/photo-1583336526884-e60c41c8c036?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-                         class="card-img-top event-image" alt="Art Exhibition">
-                     <div class="card-body">
-                         <h5 class="card-title">Art Exhibition</h5>
-                         <p class="card-text">Explore stunning contemporary art!</p>
-                         <a href="#" class="btn btn-primary">View Details</a>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
- </section>
+<!-- Featured Events Section -->
+<section class="featured-events py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Featured Events</h2>
+            <a href="/events/search?is_featured=1" class="btn btn-outline-primary">View All</a>
+        </div>
+
+        <div class="row g-4">
+            <?php foreach ($featuredEvents as $event): ?>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 event-card border-0 shadow-sm">
+                        <div class="position-relative">
+                            <img src="img<?= $event['thumbnail'] ?>" class="card-img-top event-image"
+                                alt="<?= $event['title'] ?>">
+                            <?php if ($event['is_featured']): ?>
+                                <div class="featured-badge">
+                                    <i class="bi bi-star-fill"></i> Featured
+                                </div>
+                            <?php endif; ?>
+                            <?php if (strtotime($event['registration_deadline']) > time()): ?>
+                                <div class="countdown-timer" data-deadline="<?= $event['registration_deadline'] ?>">
+                                    <!-- Countdown will be inserted by JS -->
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-<?= \App\Enums\EventTypeEnum::getTypeColor($event['event_type']) ?>">
+                                    <?= ucfirst($event['event_type']) ?>
+                                </span>
+                                <span class="price-tag <?= $event['ticket_price'] > 0 ? 'bg-primary' : 'bg-success' ?>">
+                                    <?= $event['ticket_price'] > 0 ? '$' . number_format($event['ticket_price'], 2) : 'Free' ?>
+                                </span>
+                            </div>
+
+                            <h5 class="card-title mb-1"><?= $event['title'] ?></h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-calendar3"></i> <?= date('M d, Y', strtotime($event['start_date'])) ?>
+                            </p>
+
+                            <div class="capacity-wrapper mb-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Capacity</span>
+                                    <span><?= $event['current_capacity'] ?>/<?= $event['max_capacity'] ?></span>
+                                </div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-success"
+                                        style="width: <?= ($event['current_capacity'] / $event['max_capacity']) * 100 ?>%">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="card-text text-muted mb-3"><?= substr($event['description'], 0, 100) ?>...</p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="/events/<?= $event['slug'] ?>" class="btn btn-outline-primary btn-sm">View
+                                    Details</a>
+                                <div class="organizer">
+                                    <span class="small ms-2"><?= $event['organizer_name'] ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>

@@ -25,6 +25,7 @@ class CreateUserTable implements MigrationInterface
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL UNIQUE,
+            avatar VARCHAR(255)  NULL DEFAULT '/users/default_avatar.png',
             password VARCHAR(255) NOT NULL,
             role ENUM($enumValues) NOT NULL DEFAULT '$defaultRole',
             status BOOLEAN NOT NULL DEFAULT 1,
