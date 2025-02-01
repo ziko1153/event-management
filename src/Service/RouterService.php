@@ -57,8 +57,6 @@ class RouterService
 
     public function dispatch(): void
     {
-        // $this->serveStaticFiles();
-
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
@@ -73,8 +71,17 @@ class RouterService
         $queryParams = $_GET;
         $postParams = $_POST;
 
+        // Handle JSON request body
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        if (strpos($contentType, 'application/json') !== false) {
+            $jsonData = json_decode(file_get_contents('php://input'), true);
+            if ($jsonData) {
+                $postParams = $jsonData;
+            }
+        }
 
         $allParams = array_merge($params, $queryParams, $postParams);
+        
         $this->runMiddleware($route['middleware'], $allParams);
         $this->executeHandler($route['action'], $allParams);
     }
