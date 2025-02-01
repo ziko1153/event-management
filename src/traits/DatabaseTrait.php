@@ -107,7 +107,7 @@ trait DatabaseTrait
             
             foreach ($data as $key => $value) {
                 $setClauses[] = "$key = :set_$key";
-                $params["set_$key"] = $value;
+                $params["set_$key"] = is_bool($value) ? (int)$value : $value;
             }
 
             $query = "UPDATE {$this->table} SET " . implode(', ', $setClauses) . " WHERE id = :id";
