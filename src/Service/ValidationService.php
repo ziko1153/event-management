@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use Config\Database;
+
 class ValidationService
 {
     private array $errors = [];
@@ -13,7 +15,16 @@ class ValidationService
         $this->data = $data;
 
         foreach ($rules as $field => $fieldRules) {
+
+            if (in_array('nullable', $fieldRules) && empty($this->data[$field] ?? null)) {
+                continue;
+            }
+
             foreach ($fieldRules as $rule) {
+                if ($rule === 'nullable') {
+                    continue;
+                }
+
                 $ruleParts = explode(':', $rule);
                 $ruleName = $ruleParts[0];
                 $ruleValue = $ruleParts[1] ?? null;
@@ -39,6 +50,7 @@ class ValidationService
     private function validateRule(string $field, string $rule, ?string $parameter = null): bool
     {
         $value = $this->data[$field] ?? null;
+
 
         switch ($rule) {
             case 'required':
@@ -131,9 +143,57 @@ class ValidationService
                     return false;
                 }
                 break;
+            case 'unique':
+                $this->validateUnique($field, $value, $parameter);
+                break;
+            case 'match':
+                $matchValue = $this->data[$parameter] ?? null;
+                if ($value !== $matchValue) {
+                    $this->addError($field, "The $field must match " . str_replace('_', ' ', $parameter));
+                    return false;
+                }
+                break;
         }
 
         return true;
+    }
+
+    private function validateUnique(string $field, mixed $value, ?string $parameter): bool
+    {
+        if (empty($value)) {
+            return true;
+        }
+
+        [$table, $excludeId] = array_pad(explode(',', $parameter), 2, null);
+
+        if (!$table) {
+            $this->addError($field, 'Invalid table name');
+            return false;
+        }
+
+        try {
+            $db = Database::getInstance();
+            $query = "SELECT COUNT(*) FROM {$table} WHERE {$field} = :value";
+            $params = [':value' => $value];
+
+            if ($excludeId) {
+                $query .= " AND id != :exclude_id";
+                $params[':exclude_id'] = $excludeId;
+            }
+
+            $stmt = $db->getConnection()->prepare($query);
+            $stmt->execute($params);
+
+            if ((int)$stmt->fetchColumn() > 0) {
+                $this->addError($field, "The {$field} has already been taken");
+                return false;
+            }
+
+            return true;
+        } catch (\PDOException $e) {
+            $this->addError($field, "Database error while checking uniqueness");
+            return false;
+        }
     }
 
     private function validateFileRule(string $field, string $rule, ?string $parameter = null): bool
@@ -201,7 +261,7 @@ class ValidationService
         }
 
         try {
-            $db = \Config\Database::getInstance();
+            $db = Database::getInstance();
             $connection = $db->getConnection();
             $stmt = $connection->prepare($query);
             $stmt->execute($params);
