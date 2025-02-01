@@ -40,8 +40,10 @@ class AuthController
             exit;
         }
 
-        $_SESSION['success'] = 'Login successful!'; // Changed from error to success
-        header('Location: /dashboard'); // Changed destination
+        // dd($params);
+
+        $_SESSION['success'] = 'Login successful!';
+        $this->redirectBasedOnRole($params['redirect'] ?? null);
         exit;
     }
 
@@ -155,5 +157,24 @@ class AuthController
         $this->authService->logout();
         header('Location: /login');
         exit;
+    }
+
+    private function redirectBasedOnRole($redirect = null): void
+    {
+        if ($redirect) {
+            header("Location: $redirect");
+            exit;
+        }
+
+        $roleRedirects = [
+            'admin' => '/admin/dashboard',
+            'organizer' => '/admin/dashboard',
+            'user' => '/user/my-events'
+        ];
+
+        $role = $_SESSION['user']['role'] ?? 'user';
+        $redirectUrl = $roleRedirects[$role] ?? '/';
+
+        header('Location: ' . $redirectUrl);
     }
 }
