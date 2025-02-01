@@ -26,3 +26,10 @@ if (!function_exists('dd')) {
         die();
     }
 }
+
+if (!function_exists('oldData')) {
+    function oldData($field, $default = '')
+    {
+        return $_SESSION['old'][$field] ?? $default;
+    }
+}

@@ -23,5 +23,6 @@ class View
         }
 
         require $layoutFile;
+        unset($_SESSION["old"]);
     }
 }
