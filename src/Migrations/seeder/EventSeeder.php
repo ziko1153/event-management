@@ -33,7 +33,7 @@ class EventSeeder
         'Khulna',
         'Barisal',
         'Rangpur',
-        "Cox\'s Bazar",
+        "Cox's Bazar",
         'Mymensingh',
         'Comilla'
     ];
@@ -71,7 +71,7 @@ class EventSeeder
             $maxCapacity = rand(100, 1000);
             $currentCapacity = rand(0, $maxCapacity);
             $eventType = $eventTypes[array_rand($eventTypes)];
-
+            $isEventFree = rand(0, 1);
             $events[] = [
                 'created_by' => rand(3, 4),
                 'organizer_id' => rand(3, 4),
@@ -86,7 +86,7 @@ class EventSeeder
                 'registration_deadline' => $regDeadline->format('Y-m-d H:i:s'),
                 'max_capacity' => $maxCapacity,
                 'current_capacity' => $currentCapacity,
-                'ticket_price' => rand(500, 5000) . '.00',
+                'ticket_price' =>  $isEventFree ? 0 : rand(500, 5000) . '.00',
                 'event_type' => $eventType,
                 'status' => EventStatusEnum::PUBLISHED->value,
                 'is_featured' => (rand(1, 10) > 8),

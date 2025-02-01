@@ -20,7 +20,9 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="/login" method="POST">
+                <form
+                    action="/login<?= isset($_GET['redirect']) ? '?redirect=' . htmlspecialchars($_GET['redirect']) : '' ?>"
+                    method="POST">
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
                         <input type="email" class="form-control" id="email" name="email" required>

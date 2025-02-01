@@ -17,15 +17,21 @@ class ImageService
             mkdir($this->uploadPath, 0755, true);
         }
 
+
+
+        $pathParts = explode('public/', $this->uploadPath);
+        $fileUniqueName = explode("/", $pathParts[1]);
+        
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = uniqid('event_') . '.' . $extension;
+        $filename = uniqid($fileUniqueName[count($fileUniqueName) - 2] . '_') . '.' . $extension;
         $destination = $this->uploadPath . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             throw new \RuntimeException('Failed to upload image');
         }
 
-        return 'img/events/' . $filename;
+
+        return $pathParts[1] . $filename;
     }
 
     public function deleteImage(string $path): void

@@ -3,6 +3,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use App\Migrations\Database\CreateEventCategoriesTable;
 use App\Migrations\Database\CreateEventCategoryRelationTable;
+use App\Migrations\Database\CreateEventRegistrationTable;
 use App\Migrations\Database\CreateEventTable;
 use App\Migrations\Database\CreateUserTable;
 use App\Migrations\Seeder\EventSeeder;
@@ -16,7 +17,8 @@ $availableMigrations = [
     new CreateUserTable($connection),
     new CreateEventTable($connection),
     new CreateEventCategoriesTable($connection),
-    new CreateEventCategoryRelationTable($connection)
+    new CreateEventCategoryRelationTable($connection),
+    new CreateEventRegistrationTable($connection)
 ];
 
 $availableSeeders = [

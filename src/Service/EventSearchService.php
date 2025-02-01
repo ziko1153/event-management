@@ -51,11 +51,11 @@ class EventSearchService
         }
 
         // Filter by price range
-        if (!empty($filters['min_price'])) {
+        if (isset($filters['min_price']) && (int)$filters['min_price'] >= 0) {
             $whereConditions[] = "events.ticket_price >= :min_price";
             $params[':min_price'] = floatval($filters['min_price']);
         }
-        if (!empty($filters['max_price'])) {
+        if (isset($filters['max_price']) && (int)$filters['max_price'] >= 0) {
             $whereConditions[] = "events.ticket_price <= :max_price";
             $params[':max_price'] = floatval($filters['max_price']);
         }

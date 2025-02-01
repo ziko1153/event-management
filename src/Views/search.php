@@ -132,7 +132,7 @@
                                                 </div>
                                             </div>
 
-                                            <a href="/events/<?= $event['slug'] ?>"
+                                            <a href="/events/register/<?= $event['slug'] ?>"
                                                 class="btn btn-sm btn-outline-primary">View Details</a>
                                         </div>
                                     </div>

@@ -88,7 +88,7 @@
                             <p class="card-text text-muted mb-3"><?= substr($event['description'], 0, 100) ?>...</p>
 
                             <div class="d-flex justify-content-between align-items-center">
-                                <a href="/events/<?= $event['slug'] ?>" class="btn btn-outline-primary btn-sm">View
+                                <a href="/events/register/<?= $event['slug'] ?>" class="btn btn-outline-primary btn-sm">View
                                     Details</a>
                                 <div class="organizer">
                                     <span class="small ms-2"><?= $event['organizer_name'] ?></span>
