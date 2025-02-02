@@ -37,18 +37,6 @@ A robust PHP-based event management system with **OOP and MVC**  that allows org
 - Vanilla JavaScript
 - PDO for database operations
 
-## Directory Structure
-event-management/
-├── config/           # Configuration files
-├── public/          # Public assets and entry point
-├── src/             # Application source code
-│   ├── Controllers/ # Application controllers
-│   ├── Models/      # Database models
-│   ├── Services/    # Business logic
-│   ├── Views/       # Template files
-│   └── Migrations/  # Database migrations
-└── vendor/         # Composer dependencies
-└── migration.php         # Migration Setup File
 ## Installation
 
 ## 1. Clone the repository:
@@ -123,6 +111,7 @@ php migrate.php --file=CreateUserTable
 ```
 
 ## Test Credentials
+**visit: https://ollyo.pos24.xyz/login**
 ### Admin Access
 - Email: tahmidziko@test.com
 - Password: 12345678
