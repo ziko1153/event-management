@@ -1,3 +1,16 @@
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}
 /* Hero Section */
 .hero-section {
     background: linear-gradient(rgba(225, 129, 129, 0.5), rgba(210, 72, 245, 0.5)), url('/img/hero-bg.jpg');
