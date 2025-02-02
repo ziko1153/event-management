@@ -31,6 +31,11 @@ class EventService
         $whereConditions = ['1=1'];
         $params = [];
 
+        if (isUserOrganizer()) {
+            $whereConditions[] = "events.organizer_id = :org_id";
+            $params[':org_id'] = $_SESSION['user']['organizer']['id'];
+        }
+
         if (!empty($filters['status'])) {
             $whereConditions[] = "events.status = :status";
             $params[':status'] = $filters['status'];
@@ -42,8 +47,15 @@ class EventService
         }
 
         if (!empty($filters['search'])) {
-            $whereConditions[] = "MATCH(events.title, events.description) AGAINST (:search IN BOOLEAN MODE)";
-            $params[':search'] = $filters['search'];
+            $search = $filters['search'];
+            if (strlen($search) < 11) {
+                $whereConditions[] = "(events.title LIKE :title_search OR events.description LIKE :des_search)";
+                $params[':title_search'] = "%{$search}%";
+                $params[':des_search'] = "%{$search}%";
+            } else {
+                $whereConditions[] = "MATCH(events.title, events.description) AGAINST (:search IN NATURAL LANGUAGE MODE)";
+                $params[':search'] = $search;
+            }
         }
 
 
@@ -69,20 +81,26 @@ class EventService
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'DESC';
 
-        $allowedSortFields = ['registration_deadline', 'start_date', 'end_date'];
+        $allowedSortFields = ['registration_deadline', 'start_date', 'end_date', 'title'];
         $sort = in_array($sort, $allowedSortFields) ? $sort : 'created_at';
         $order = strtoupper($order) === 'ASC' ? 'ASC' : 'DESC';
 
         $query = "SELECT 
                     events.*,
-                    organizations.name as organizer_name
+                    organizations.name as organizer_name,
+                    COALESCE(attendees.attendee_count, 0) as attendee_count
                  FROM events
                  LEFT JOIN organizations ON events.organizer_id = organizations.id
+                 LEFT JOIN (
+                    SELECT event_id, COUNT(*) as attendee_count 
+                    FROM event_registrations 
+                    GROUP BY event_id
+                 ) attendees ON events.id = attendees.event_id
                  WHERE " . implode(' AND ', $whereConditions) . "
                  ORDER BY events.$sort $order
                  LIMIT :limit OFFSET :offset";
 
-
+        // dd($query);
 
         $countQuery = "SELECT COUNT(*) as total 
                  FROM events
@@ -111,6 +129,10 @@ class EventService
             $data['thumbnail'] = $this->imageService->uploadImage($file);
             $data['slug'] = $this->generateSlug($data['title']);
             $data['created_by'] = $_SESSION['user']['id'];
+            if (isUserOrganizer()) {
+                $data['organizer_id'] = $_SESSION['user']['organizer']['id'];
+                $data['is_featured'] = 0; // only admin can do this,no other user
+            }
 
             $eventId = $this->eventModel->create($data);
 
@@ -141,17 +163,21 @@ class EventService
 
         try {
             $this->connection->beginTransaction();
-
-            $event = $this->eventModel->findById($data['slug']);
+            $event = $this->eventModel->findByColumn('slug', $data['slug']);
+            
             if (!$event) {
                 throw new \Exception('Event not found');
+            }
+
+            if (isUserOrganizer() &&  !$this->canOrganizerPerformThisTask($event['organizer_id'])) {
+                throw new \Exception('Not Authorized');
             }
 
             if ($event['current_capacity'] > $data['max_capacity']) {
                 return [
                     'validation_error' => true,
                     'success' => false,
-                    'errors' => ['max_capacity' => 'Event is Full, Current Attendees: ' . $event['current_capacity']],
+                    'errors' => ['max_capacity' => 'Event is Full, write same or greater than Current Attendees: ' . $event['current_capacity']],
                 ];
             }
 
@@ -164,9 +190,19 @@ class EventService
                 }
             }
 
+
             if ($data['title'] !== $event['title']) {
                 $data['slug'] = $this->generateSlug($data['title']);
             }
+
+
+            $data['ticket_price'] = empty($data['ticket_price']) ? 0 : $data['ticket_price'];
+            $data['max_capacity'] = empty($data['max_capacity']) ? 0 : $data['max_capacity'];
+
+            if (isUserOrganizer()) {
+                $data['is_featured'] = 0; // Only admin can edit this feature
+            }
+
             // Update event
             $this->eventModel->update($event['id'], $data);
 
@@ -201,6 +237,10 @@ class EventService
                 throw new \Exception('Event not found');
             }
 
+            if (isUserOrganizer() && !$this->canOrganizerPerformThisTask($event['organizer_id'])) {
+                throw new \Exception('Not Authorized to perform this task');
+            }
+
             $this->eventModel->delete($event['id']);
 
             if ($event['thumbnail'] && !in_array(basename($event['thumbnail']), ['event1.png', 'event2.png'])) {
@@ -217,7 +257,7 @@ class EventService
             $this->connection->rollBack();
             return [
                 'success' => false,
-                'error' => 'Failed to delete event: ' . $e->getMessage()
+                'message' => 'Failed to delete event: ' . $e->getMessage()
             ];
         }
     }
@@ -260,5 +300,11 @@ class EventService
                 'message' => 'Failed to fetch organizers'
             ];
         }
+    }
+
+
+    public function canOrganizerPerformThisTask(int $organizerId): bool
+    {
+        return isUserOrganizer() &&  $organizerId == $_SESSION['user']['organizer']['id'];
     }
 }

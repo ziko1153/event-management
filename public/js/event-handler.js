@@ -26,9 +26,10 @@ const registerEvent = async (formData) => {
     }
 };
 
-const updateEvent = async (formData, eventId) => {
+const updateEvent = async (formData, eventSlug) => {
+
     try {
-        const response = await fetch(`/admin/events/update/${eventId}`, {
+        const response = await fetch(`/admin/events/update/${eventSlug}`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -50,6 +51,8 @@ const updateEvent = async (formData, eventId) => {
 
         return result;
     } catch (error) {
+        console.log(error);
+
         throw error;
     }
 };

@@ -17,10 +17,10 @@
                     <select name="organizer_id" class="form-select" required>
                         <option value="">Select Organizer</option>
                         <?php foreach ($organizers as $organizer): ?>
-                            <option value="<?= $organizer['id'] ?>"
-                                <?= ($_SESSION['old']['organizer_id'] ?? '') == $organizer['id'] ? 'selected' : '' ?>>
-                                <?= $organizer['name'] ?>
-                            </option>
+                        <option value="<?= $organizer['id'] ?>"
+                            <?= ($_SESSION['old']['organizer_id'] ?? '') == $organizer['id'] ? 'selected' : '' ?>>
+                            <?= $organizer['name'] ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -54,10 +54,10 @@
                     <select name="event_type" class="form-select" required>
                         <option value="">Select Type</option>
                         <?php foreach ($types as $type): ?>
-                            <option value="<?= $type ?>"
-                                <?= ($_SESSION['old']['event_type'] ?? '') === $type ? 'selected' : '' ?>>
-                                <?= ucfirst(strtolower($type)) ?>
-                            </option>
+                        <option value="<?= $type ?>"
+                            <?= ($_SESSION['old']['event_type'] ?? '') === $type ? 'selected' : '' ?>>
+                            <?= ucfirst(strtolower($type)) ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -91,6 +91,7 @@
                     <input type="file" name="thumbnail" class="form-control" accept="image/*" required>
                 </div>
 
+                <?php if (!isUserOrganizer()) : ?>
                 <div class="col-md-6">
                     <div class="form-check">
                         <input id="is_featured" type="checkbox" name="is_featured" class="form-check-input" value="1"
@@ -98,6 +99,8 @@
                         <label for="is_featured" class="form-check-label">Featured Event</label>
                     </div>
                 </div>
+
+                <?php endif ?>
 
 
                 <div class="col-12">
@@ -113,86 +116,86 @@
 </div>
 
 <script type="module">
-    import {
-        registerEvent,
-        showFieldErrors,
-        clearFieldErrors,
-        showSuccess,
-        showError
-    } from '/js/event-handler.js';
+import {
+    registerEvent,
+    showFieldErrors,
+    clearFieldErrors,
+    showSuccess,
+    showError
+} from '/js/event-handler.js';
 
-    const handleImagePreview = (input) => {
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const preview = document.createElement('img');
-                preview.src = e.target.result;
-                preview.style.maxWidth = '200px';
-                preview.classList.add('mt-2', 'rounded');
+const handleImagePreview = (input) => {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.createElement('img');
+            preview.src = e.target.result;
+            preview.style.maxWidth = '200px';
+            preview.classList.add('mt-2', 'rounded');
 
-                const container = input.parentNode;
-                const oldPreview = container.querySelector('img');
-                if (oldPreview) {
-                    container.removeChild(oldPreview);
-                }
-                container.appendChild(preview);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    document.querySelector('input[name="thumbnail"]').addEventListener('change', function() {
-        handleImagePreview(this);
-    });
-
-    document.getElementById('eventForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const form = this;
-        const submitBtn = form.querySelector('#submitBtn');
-        const spinner = submitBtn.querySelector('.spinner-border');
-        const alertContainer = document.getElementById('alertContainer');
-        const thumbnailInput = form.querySelector('input[name="thumbnail"]');
-
-        // Validate image before submission
-        if (thumbnailInput.files.length === 0) {
-            showError('Please select an image', alertContainer);
-            thumbnailInput.classList.add('is-invalid');
-            return;
-        }
-
-        clearFieldErrors();
-        alertContainer.innerHTML = '';
-
-        submitBtn.disabled = true;
-        spinner.classList.remove('d-none');
-
-        try {
-            const formData = new FormData(form);
-            const result = await registerEvent(formData);
-
-            showSuccess(result.message, alertContainer);
-            window.location.href = '/admin/events';
-
-        } catch (error) {
-            if (error.validationErrors) {
-                showFieldErrors(error.validationErrors);
-                showError('Please correct the errors below.', alertContainer);
-            } else {
-                showError(error.message, alertContainer);
+            const container = input.parentNode;
+            const oldPreview = container.querySelector('img');
+            if (oldPreview) {
+                container.removeChild(oldPreview);
             }
+            container.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
-            const firstError = document.querySelector('.is-invalid');
-            if (firstError) {
-                firstError.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        } finally {
-            spinner.classList.add('d-none');
-            submitBtn.disabled = false;
+document.querySelector('input[name="thumbnail"]').addEventListener('change', function() {
+    handleImagePreview(this);
+});
+
+document.getElementById('eventForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const submitBtn = form.querySelector('#submitBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    const alertContainer = document.getElementById('alertContainer');
+    const thumbnailInput = form.querySelector('input[name="thumbnail"]');
+
+    // Validate image before submission
+    if (thumbnailInput.files.length === 0) {
+        showError('Please select an image', alertContainer);
+        thumbnailInput.classList.add('is-invalid');
+        return;
+    }
+
+    clearFieldErrors();
+    alertContainer.innerHTML = '';
+
+    submitBtn.disabled = true;
+    spinner.classList.remove('d-none');
+
+    try {
+        const formData = new FormData(form);
+        const result = await registerEvent(formData);
+
+        showSuccess(result.message, alertContainer);
+        window.location.href = '/admin/events';
+
+    } catch (error) {
+        if (error.validationErrors) {
+            showFieldErrors(error.validationErrors);
+            showError('Please correct the errors below.', alertContainer);
+        } else {
+            showError(error.message, alertContainer);
         }
-    });
+
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    } finally {
+        spinner.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+});
 </script>

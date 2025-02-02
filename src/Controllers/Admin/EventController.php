@@ -15,6 +15,7 @@ class EventController extends BaseController
 {
     private Event $eventModel;
     private User $userModel;
+    private Organization $organizerModel;
     private ValidationService $validator;
     private EventService $eventService;
 
@@ -22,6 +23,7 @@ class EventController extends BaseController
     {
         $this->eventModel = new Event();
         $this->userModel = new User();
+        $this->organizerModel = new Organization();
         $this->validator = new ValidationService();
         $this->eventService = new EventService();
     }
@@ -70,7 +72,12 @@ class EventController extends BaseController
 
     public function create(): void
     {
-        $organizers = $this->userModel->findAll(['role' => 'organizer']);
+        if (isUserOrganizer()) {
+            $organizers = [$this->organizerModel->findByColumn('user_id', $_SESSION['user']['id'])];
+            $_SESSION['old']['organizer_id'] = $_SESSION['user']['organizer']['id'];
+        } else {
+            $organizers = $this->organizerModel->findAll();
+        }
 
         view('admin/events/create', [
             'title' => 'Create Event',
@@ -118,7 +125,13 @@ class EventController extends BaseController
             exit;
         }
 
-        $organizers = $this->userModel->findAll(['role' => 'organizer']);
+        if (isUserOrganizer()) {
+            $organizers = [$this->organizerModel->findByColumn('user_id', $_SESSION['user']['id'])];
+        } else {
+            $organizers = $this->organizerModel->findAll();
+        }
+
+        // dd($organizers);
 
         view('admin/events/edit', [
             'title' => 'Edit Event',
@@ -131,11 +144,13 @@ class EventController extends BaseController
 
     public function update(array $params): array
     {
+
         $rules = [
             'title' => ['required', 'min:3'],
-            'organizer_id' => ['required', 'exists:users,id,role,organizer'],
+            'organizer_id' => ['required', 'exists:organizations,id'],
             'description' => ['required'],
             'start_date' => ['required', 'date', 'after:registration_deadline'],
+            'ticket_price' => ['nullable', 'numeric'],
             'end_date' => ['required', 'date', 'after_equal:start_date'],
             'registration_deadline' => ['required', 'date'],
             'event_type' => ['required', 'enum:' . implode(',', EventTypeEnum::getEventEnum())],
@@ -152,7 +167,7 @@ class EventController extends BaseController
         }
 
         $result = $this->eventService->updateEvent($params, $_FILES['thumbnail'] ?? null);
-
+        // dd($result);
         if (!$result['success']) {
 
             if (isset($result['validation_error'])) {
@@ -179,6 +194,7 @@ class EventController extends BaseController
             exit;
         }
 
+
         $query = "SELECT users.*, event_registrations.*
                  FROM users 
                  INNER JOIN event_registrations ON users.id = event_registrations.user_id 
@@ -195,9 +211,16 @@ class EventController extends BaseController
 
     public function downloadAttendees(array $params): void
     {
+        
         $event = $this->eventModel->findByColumn('slug', $params['slug']);
         if (!$event) {
             $_SESSION['error'] = 'Event not found';
+            header('Location: /admin/events');
+            exit;
+        }
+
+        if (isUserOrganizer() && !$this->eventService->canOrganizerPerformThisTask($event['organizer_id'])) {
+            $_SESSION['error'] = 'Yuu are not authorized to perform this task';
             header('Location: /admin/events');
             exit;
         }

@@ -16,10 +16,14 @@
                 <label for="eventStatus" class="form-label">Event Status</label>
                 <select class="form-select" name="status" id="eventStatus">
                     <option value="">All Status</option>
-                    <?php foreach ($statuses as $status): ?>
-                        <option value="<?= $status ?>">
-                            <?= ucfirst(strtolower($status)) ?>
-                        </option>
+                    <?php
+
+                    use App\Enums\RoleEnum;
+
+                    foreach ($statuses as $status): ?>
+                    <option value="<?= $status ?>">
+                        <?= ucfirst(strtolower($status)) ?>
+                    </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -28,9 +32,9 @@
                 <select class="form-select" name="type" id="eventType">
                     <option value="">All Types</option>
                     <?php foreach ($types as $type): ?>
-                        <option value="<?= $type ?>">
-                            <?= ucfirst(strtolower($type)) ?>
-                        </option>
+                    <option value="<?= $type ?>">
+                        <?= ucfirst(strtolower($type)) ?>
+                    </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -50,6 +54,7 @@
                 <label for="endDate" class="form-label">To Date</label>
                 <input type="date" class="form-control" name="end_date" id="endDate">
             </div>
+            <?php if ($_SESSION['user']['role'] == App\Enums\RoleEnum::ADMIN->value): ?>
             <div class="col-md-3">
                 <label for="organizerSearch" class="form-label">Search Organizer</label>
                 <div class="position-relative">
@@ -60,6 +65,7 @@
                     </div>
                 </div>
             </div>
+            <?php endif ?>
             <div class="col-md-1">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-flex align-items-center gap-2">
@@ -99,6 +105,7 @@
                         </th>
                         <th>Price</th>
                         <th>Type</th>
+                        <th>Total Attendees</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -124,95 +131,97 @@
 </div>
 
 <script type="module">
-    import {
-        initOrganizerSearch
-    } from '/js/organizer-search.js';
-    document.addEventListener('DOMContentLoaded', function() {
-        let currentPage = 1;
-        let currentSort = 'created_at';
-        let currentOrder = 'DESC';
-        initOrganizerSearch();
+import {
+    initOrganizerSearch
+} from '/js/organizer-search.js';
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    let currentSort = 'created_at';
+    let currentOrder = 'DESC';
+    <?php if ($_SESSION['user']['role'] == App\Enums\RoleEnum::ADMIN->value):  ?>
+    initOrganizerSearch();
+    <?php endif; ?>
+    loadEvents();
+    document.getElementById('eventFilterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        currentPage = 1;
         loadEvents();
-        document.getElementById('eventFilterForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            currentPage = 1;
-            loadEvents();
-        });
+    });
 
-        document.getElementById('eventFilterForm').addEventListener('reset', function(e) {
-            e.preventDefault();
-            // Reset all form inputs
-            const form = this;
-            form.querySelectorAll('input, select').forEach(element => {
-                if (element.type === 'hidden') {
-                    element.value = '';
-                } else if (element.type === 'date') {
-                    element.value = '';
-                } else if (element.tagName === 'SELECT') {
-                    element.selectedIndex = 0;
-                } else {
-                    element.value = '';
-                }
-            });
-
-            document.getElementById('organizerId').value = '';
-            document.getElementById('organizerSearch').value = '';
-
-            currentPage = 1;
-            currentSort = 'created_at';
-            currentOrder = 'DESC';
-
-            loadEvents();
-        });
-
-        document.querySelectorAll('.sort-header').forEach(header => {
-            header.addEventListener('click', function(e) {
-                e.preventDefault();
-                const sort = this.dataset.sort;
-                currentOrder = sort === currentSort && currentOrder === 'ASC' ? 'DESC' : 'ASC';
-                currentSort = sort;
-                loadEvents();
-            });
-        });
-
-        async function loadEvents() {
-            showLoading(true);
-
-            try {
-                const formData = new FormData(document.getElementById('eventFilterForm'));
-                const params = new URLSearchParams({
-                    page: currentPage,
-                    sort: currentSort,
-                    order: currentOrder,
-                    ...Object.fromEntries(formData)
-                });
-
-                const response = await fetch(`/admin/events?${params}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to load events');
-                }
-
-                renderEvents(data.events);
-                renderPagination(data.pagination);
-                updateUrl(params);
-
-            } catch (error) {
-                showError(error.message);
-            } finally {
-                showLoading(false);
+    document.getElementById('eventFilterForm').addEventListener('reset', function(e) {
+        e.preventDefault();
+        // Reset all form inputs
+        const form = this;
+        form.querySelectorAll('input, select').forEach(element => {
+            if (element.type === 'hidden') {
+                element.value = '';
+            } else if (element.type === 'date') {
+                element.value = '';
+            } else if (element.tagName === 'SELECT') {
+                element.selectedIndex = 0;
+            } else {
+                element.value = '';
             }
-        }
+        });
 
-        function renderEvents(events) {
-            const tbody = document.getElementById('eventsTableBody');
-            tbody.innerHTML = events.map(event => `
+        document.getElementById('organizerId').value = '';
+        document.getElementById('organizerSearch').value = '';
+
+        currentPage = 1;
+        currentSort = 'created_at';
+        currentOrder = 'DESC';
+
+        loadEvents();
+    });
+
+    document.querySelectorAll('.sort-header').forEach(header => {
+        header.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sort = this.dataset.sort;
+            currentOrder = sort === currentSort && currentOrder === 'ASC' ? 'DESC' : 'ASC';
+            currentSort = sort;
+            loadEvents();
+        });
+    });
+
+    async function loadEvents() {
+        showLoading(true);
+
+        try {
+            const formData = new FormData(document.getElementById('eventFilterForm'));
+            const params = new URLSearchParams({
+                page: currentPage,
+                sort: currentSort,
+                order: currentOrder,
+                ...Object.fromEntries(formData)
+            });
+
+            const response = await fetch(`/admin/events?${params}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load events');
+            }
+
+            renderEvents(data.events);
+            renderPagination(data.pagination);
+            updateUrl(params);
+
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function renderEvents(events) {
+        const tbody = document.getElementById('eventsTableBody');
+        tbody.innerHTML = events.map(event => `
                     <tr>
                         <td>
                             <img src="/${event.thumbnail}" 
@@ -225,8 +234,9 @@
                         <td>${new Date(event.registration_deadline).toLocaleDateString()}</td>
                         <td>${new Date(event.start_date).toLocaleDateString()}</td>
                         <td>${new Date(event.end_date).toLocaleDateString()}</td>
-                        <td>${event.price ? '$' + parseFloat(event.price).toFixed(2) : 'Free'}</td>
+                        <td>${event.ticket_price >0 ? '৳' + parseFloat(event.ticket_price).toFixed(2) : 'Free'}</td>
                         <td>${capitalize(event.event_type)}</td>
+                        <td>${event.attendee_count}</td>
                         <td>
                             <span class="badge bg-${getStatusColor(event.status)}">
                                 ${capitalize(event.status)}
@@ -250,129 +260,129 @@
                         </td>
                     </tr>
                 `).join('');
+    }
+
+    function renderPagination(pagination) {
+        const container = document.getElementById('eventsPagination');
+        if (!pagination.total) {
+            container.innerHTML = '';
+            return;
         }
 
-        function renderPagination(pagination) {
-            const container = document.getElementById('eventsPagination');
-            if (!pagination.total) {
-                container.innerHTML = '';
-                return;
-            }
-
-            let html = '';
-            if (pagination.current > 1) {
-                html += `<li class="page-item">
+        let html = '';
+        if (pagination.current > 1) {
+            html += `<li class="page-item">
                         <a class="page-link" href="#" data-page="${pagination.current - 1}">Previous</a>
                     </li>`;
-            }
+        }
 
-            for (let i = 1; i <= pagination.total; i++) {
-                html += `<li class="page-item ${i === pagination.current ? 'active' : ''}">
+        for (let i = 1; i <= pagination.total; i++) {
+            html += `<li class="page-item ${i === pagination.current ? 'active' : ''}">
                         <a class="page-link" href="#" data-page="${i}">${i}</a>
                     </li>`;
-            }
+        }
 
-            if (pagination.current < pagination.total) {
-                html += `<li class="page-item">
+        if (pagination.current < pagination.total) {
+            html += `<li class="page-item">
                         <a class="page-link" href="#" data-page="${pagination.current + 1}">Next</a>
                     </li>`;
-            }
-
-            container.innerHTML = html;
-
-            container.querySelectorAll('.page-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentPage = parseInt(this.dataset.page);
-                    loadEvents();
-                });
-            });
         }
 
-        window.deleteEvent = async function(slug) {
-            if (!confirm('Are you sure you want to delete this event?')) {
-                return;
-            }
+        container.innerHTML = html;
 
-            try {
-                const response = await fetch(`/admin/events/delete/${slug}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to delete event');
-                }
-
-                showSuccess(data.message);
+        container.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.dataset.page);
                 loadEvents();
+            });
+        });
+    }
 
-            } catch (error) {
-                showError(error.message);
-            }
-        };
-
-
-        function showLoading(show) {
-            document.getElementById('loadingIndicator').classList.toggle('d-none', !show);
+    window.deleteEvent = async function(slug) {
+        if (!confirm('Are you sure you want to delete this event?')) {
+            return;
         }
 
-        function showError(message) {
-            const alert = `<div class="alert alert-danger alert-dismissible fade show">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
-            document.getElementById('alertContainer').innerHTML = alert;
-        }
-
-        function showSuccess(message) {
-            const alert = `<div class="alert alert-success alert-dismissible fade show">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
-            document.getElementById('alertContainer').innerHTML = alert;
-        }
-
-        function getStatusColor(status) {
-            const colors = {
-                'published': 'success',
-                'draft': 'warning',
-                'cancelled': 'danger',
-                'completed': 'info'
-            };
-            return colors[status.toLowerCase()] || 'secondary';
-        }
-
-        function capitalize(str) {
-            return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-        }
-
-        function updateUrl(params) {
-            const url = new URL(window.location);
-            for (const [key, value] of params) {
-                if (value) {
-                    url.searchParams.set(key, value);
-                } else {
-                    url.searchParams.delete(key);
+        try {
+            const response = await fetch(`/admin/events/delete/${slug}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            }
-            window.history.pushState({}, '', url);
-        }
+            });
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to delete event');
+            }
+
+            showSuccess(data.message);
+            loadEvents();
+
+        } catch (error) {
+            showError(error.message);
         }
-    });
+    };
+
+
+    function showLoading(show) {
+        document.getElementById('loadingIndicator').classList.toggle('d-none', !show);
+    }
+
+    function showError(message) {
+        const alert = `<div class="alert alert-danger alert-dismissible fade show">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        document.getElementById('alertContainer').innerHTML = alert;
+    }
+
+    function showSuccess(message) {
+        const alert = `<div class="alert alert-success alert-dismissible fade show">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        document.getElementById('alertContainer').innerHTML = alert;
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'published': 'success',
+            'draft': 'warning',
+            'cancelled': 'danger',
+            'completed': 'info'
+        };
+        return colors[status.toLowerCase()] || 'secondary';
+    }
+
+    function capitalize(str) {
+        return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    function updateUrl(params) {
+        const url = new URL(window.location);
+        for (const [key, value] of params) {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        }
+        window.history.pushState({}, '', url);
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+});
 </script>

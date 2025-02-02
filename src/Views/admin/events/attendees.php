@@ -20,23 +20,27 @@
                             <th>Phone</th>
                             <th>Address</th>
                             <th>Registration Date</th>
+                            <th>Payment Method</th>
+                            <th>Payment Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($attendees)): ?>
-                            <tr>
-                                <td colspan="5" class="text-center">No attendees found</td>
-                            </tr>
+                        <tr>
+                            <td colspan="5" class="text-center">No attendees found</td>
+                        </tr>
                         <?php else: ?>
-                            <?php foreach ($attendees as $attendee): ?>
-                                <tr>
-                                    <td><?= $attendee['name'] ?></td>
-                                    <td><?= $attendee['email'] ?></td>
-                                    <td><?= $attendee['phone'] ?></td>
-                                    <td><?= $attendee['address'] ?></td>
-                                    <td><?= date('M d, Y H:i:s', strtotime($attendee['registered_at'])) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
+                        <?php foreach ($attendees as $attendee): ?>
+                        <tr>
+                            <td><?= $attendee['name'] ?></td>
+                            <td><?= $attendee['email'] ?></td>
+                            <td><?= $attendee['phone'] ?></td>
+                            <td><?= $attendee['address'] ?></td>
+                            <td><?= date('M d, Y H:i:s', strtotime($attendee['registered_at'])) ?></td>
+                            <td><?= $attendee['payment_method'] ?></td>
+                            <td><?= $attendee['payment_status'] ?></td>
+                        </tr>
+                        <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>

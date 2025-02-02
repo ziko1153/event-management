@@ -31,13 +31,13 @@ class AdminController extends BaseController
     public function dashboard(): void
     {
         $conditions = [];
-        if ($_SESSION['user']['role'] === RoleEnum::ORGANIZER->value) {
+        if (isUserOrganizer()) {
             $conditions['organizer_id'] = $_SESSION['user']['organizer']['id'];
         }
 
         $stats = [
-            'total_users' => $this->userModel->count(),
-            'total_events' => $this->eventModel->count(),
+            'total_users' => !isUserOrganizer() ? $this->userModel->count() : [],
+            'total_events' => $this->eventModel->count($conditions),
             'recent_events' => $this->eventModel->findWithQuery(
                 ['events.*', 'organizations.name as organizer_name'],
                 $conditions,

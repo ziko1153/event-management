@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Enums\RoleEnum;
 use App\Model\User;
 
 class AuthService
@@ -51,6 +52,10 @@ class AuthService
     {
         $user = $this->userModel->findByColumn('email', $email);
         if (!$user) {
+            return false;
+        }
+
+        if ($user['role'] == RoleEnum::ADMIN->value) {
             return false;
         }
 

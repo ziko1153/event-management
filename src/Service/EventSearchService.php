@@ -26,12 +26,13 @@ class EventSearchService
         // Search keyword
         if (!empty($filters['keyword'])) {
             $keyword = $filters['keyword'];
-            if (strlen($keyword) >= 3) {
+            if (strlen($keyword) >= 11) {
                 $whereConditions[] = "MATCH(events.title, events.description) AGAINST(:search IN NATURAL LANGUAGE MODE)";
                 $params[':search'] = $keyword;
             } else {
-                $whereConditions[] = "(events.title LIKE :search OR events.description LIKE :search)";
-                $params[':search'] = '%' . $keyword . '%';
+                $whereConditions[] = "(events.title LIKE :title_search OR events.description LIKE :des_search)";
+                $params[':title_search'] = '%' . $keyword . '%';
+                $params[':des_search'] = '%' . $keyword . '%';
             }
         }
         if (isset(($filters['is_featured'])) && $filters['is_featured'] == 1) {

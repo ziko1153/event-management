@@ -1,4 +1,6 @@
 <?php
+
+use App\Enums\RoleEnum;
 use Config\Env;
 use Config\View;
 
@@ -31,5 +33,12 @@ if (!function_exists('oldData')) {
     function oldData($field, $default = '')
     {
         return $_SESSION['old'][$field] ?? $default;
+    }
+}
+
+if (!function_exists('isUserOrganizer')) {
+    function isUserOrganizer(): bool
+    {
+        return $_SESSION['user']['role']  === RoleEnum::ORGANIZER->value;
     }
 }

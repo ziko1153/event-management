@@ -62,7 +62,7 @@ class ValidationService
                     }
                     return true;
                 }
-                if (empty($value)) {
+                if ($value === null || $value === "") {
                     $this->addError($field, "The {$field} field is required");
                     return false;
                 }
