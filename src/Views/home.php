@@ -44,7 +44,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 event-card border-0 shadow-sm">
                         <div class="position-relative">
-                            <img src="img<?= $event['thumbnail'] ?>" class="card-img-top event-image"
+                            <img src="/<?= $event['thumbnail'] ?>" class="card-img-top event-image"
                                 alt="<?= $event['title'] ?>">
                             <?php if ($event['is_featured']): ?>
                                 <div class="featured-badge">

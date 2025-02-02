@@ -33,11 +33,11 @@ class UserProfileController extends BaseController
 
             $rules = [
                 'name' => ['nullable', 'min:3'],
-                'phone' => ['nullable', 'numeric', 'min:11'],
+                'phone' => ['nullable', 'numeric', 'min:11', 'max:11'],
                 'address' => ['nullable', 'min:5'],
                 'password' => ['nullable', 'min:6'],
                 'password_confirmation' => ['nullable', 'match:password'],
-                'avatar' => ['nullable', 'image', 'type:jpg,jpeg,png', 'size:2mb']
+                'avatar' => ['nullable', 'image', 'type:jpg,jpeg,png', 'size:1mb']
             ];
 
             if (!$this->validator->validate($params, $rules)) {

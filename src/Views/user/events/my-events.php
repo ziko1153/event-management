@@ -14,7 +14,7 @@
                         <div class="card h-100 hover-shadow">
                             <div class="row g-0">
                                 <div class="col-md-4">
-                                    <img src="/img<?= $registration['thumbnail'] ?>"
+                                    <img src="/<?= $registration['thumbnail'] ?>"
                                         class="img-fluid h-100 object-fit-cover rounded-start"
                                         alt="<?= $registration['title'] ?>">
                                 </div>

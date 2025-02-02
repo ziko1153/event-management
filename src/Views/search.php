@@ -94,7 +94,7 @@
                             <div class="card h-100 event-card border-0 shadow-sm">
                                 <div class="row g-0">
                                     <div class="col-md-4 position-relative">
-                                        <img src="/img<?= $event['thumbnail'] ?>"
+                                        <img src="/<?= $event['thumbnail'] ?>"
                                             class="img-fluid h-100 object-fit-cover rounded-start"
                                             alt="<?= $event['title'] ?>">
                                         <?php if ($event['is_featured']): ?>

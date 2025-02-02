@@ -63,12 +63,19 @@ $router->get('/admin/events/update/{slug}', [EventController::class, 'edit'])->m
 $router->post('/admin/events/update/{slug}', [EventController::class, 'update'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 $router->post('/admin/events/delete/{slug}', [EventController::class, 'delete'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 $router->get('/admin/events/search-organizers', [EventController::class, 'searchOrganizers'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/events/{slug}/attendees', [EventController::class, 'attendees'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/events/{slug}/attendees/download', [EventController::class, 'downloadAttendees'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 //========================================== END: EVENT ROUTE
 
 // $router->get('/admin/categories', [CategoryController::class, 'index'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 // $router->post('/admin/categories', [CategoryController::class, 'store'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 $router->get('/admin/users', [AdminController::class, 'users'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/users/{id}', [AdminController::class, 'getUser'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/users/status', [AdminController::class, 'updateUserStatus'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 $router->post('/admin/users', [AdminController::class, 'storeUser'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/users/{id}/update', [AdminController::class, 'updateUser'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/users/{id}/delete', [AdminController::class, 'deleteUser'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+
 
 // Admin profile routes
 $router->get('/admin/profile', [AdminController::class, 'profile'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);

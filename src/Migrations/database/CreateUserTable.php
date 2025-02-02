@@ -26,7 +26,7 @@ class CreateUserTable implements MigrationInterface
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL UNIQUE,
             phone VARCHAR(15)  NULL UNIQUE,
-            avatar VARCHAR(255)  NULL DEFAULT '/users/default_avatar.png',
+            avatar VARCHAR(255)  NULL DEFAULT 'img/users/default_avatar.png',
             address TEXT  NULL,
             password VARCHAR(255) NOT NULL,
             role ENUM($enumValues) NOT NULL DEFAULT '$defaultRole',

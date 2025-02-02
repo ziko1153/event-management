@@ -32,10 +32,10 @@ class UserEventController extends BaseController
             'user_id' => $_SESSION['user']['id']
         ]);
 
-        $query = "SELECT er.*, e.*, u.name as organizer_name 
+        $query = "SELECT er.*, e.*, org.name as organizer_name 
             FROM event_registrations er
             JOIN events e ON er.event_id = e.id
-            LEFT JOIN users u ON e.organizer_id = u.id
+            LEFT JOIN organizations org ON e.organizer_id = org.id
             WHERE er.user_id = :user_id
             ORDER BY er.registered_at DESC
             LIMIT :limit OFFSET :offset";
@@ -61,9 +61,9 @@ class UserEventController extends BaseController
     public function showRegistrationForm(array $params): void
     {
 
-        $query = "SELECT events.*, users.name as organizer_name, users.avatar as organizer_avatar
+        $query = "SELECT events.*, organizations.name as organizer_name, organizations.logo as organizer_logo
         FROM events
-        LEFT JOIN users ON events.organizer_id = users.id
+        LEFT JOIN organizations ON events.organizer_id = organizations.id
         WHERE events.slug = :slug
         AND events.status = :status
         ";
@@ -107,9 +107,10 @@ class UserEventController extends BaseController
             exit;
         }
 
+
         $result = $this->registrationService->registerForEvent(
             $params['slug'],
-            $params['payment_method']
+            $params['payment_method'] ?? null
         );
 
         if ($result['success']) {
@@ -123,7 +124,7 @@ class UserEventController extends BaseController
             if (isset($result['validation_error'])) {
                 $_SESSION['error'] = $result['message'];
             } else {
-                dd($result);
+             
                 $_SESSION['error'] = 'Something went wrong on server,please try again later';
             }
 
@@ -183,17 +184,17 @@ class UserEventController extends BaseController
             header('Location: /user/my-events');
         } else {
             $_SESSION['error'] = 'Payment failed. Please try again.';
-            header('Location: /events/register/' . $registration[0]['event_id']);
+            header('Location: /user/my-events/');
         }
 
         exit;
     }
     public function show(array $params): void
     {
-        $query = "SELECT er.*, e.*, u.name as organizer_name, u.avatar as organizer_avatar
+        $query = "SELECT er.*, e.*, org.name as organizer_name,  org.logo as organizer_logo
             FROM event_registrations er
             JOIN events e ON er.event_id = e.id
-            LEFT JOIN users u ON e.organizer_id = u.id
+            LEFT JOIN  organizations org ON e.organizer_id = org.id
             WHERE e.slug = :slug AND er.user_id = :user_id";
 
         $result = $this->eventModel->executeRawQuery($query, [

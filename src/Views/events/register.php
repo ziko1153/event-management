@@ -9,7 +9,7 @@
                     <div class="event-summary mb-4">
                         <div class="row">
                             <div class="col-md-4">
-                                <img src="/img<?= $event['thumbnail'] ?>" class="img-fluid rounded"
+                                <img src="/<?= $event['thumbnail'] ?>" class="img-fluid rounded"
                                     alt="<?= $event['title'] ?>">
                             </div>
                             <div class="col-md-8">

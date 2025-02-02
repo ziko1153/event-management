@@ -34,7 +34,7 @@
                     <tr>
                         <td><?= $event['title'] ?></td>
                         <td><?= $event['organizer_name'] ?></td>
-                        <td><?= date('M d, Y', strtotime($event['date'])) ?></td>
+                        <td><?= date('M d, Y', strtotime($event['created_at'])) ?></td>
                         <td><?= ucfirst($event['status']) ?></td>
                     </tr>
                 <?php endforeach; ?>

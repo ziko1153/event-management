@@ -24,8 +24,8 @@ class CreateEventTable implements MigrationInterface
         $sql = "
         CREATE TABLE events (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            created_by BIGINT UNSIGNED NOT NULL,
-            organizer_id BIGINT UNSIGNED NOT NULL,
+            created_by BIGINT UNSIGNED  NULL,
+            organizer_id BIGINT UNSIGNED NULL,
             title VARCHAR(255) NOT NULL,
             thumbnail VARCHAR(255) NOT NULL,
             slug VARCHAR(255) NOT NULL UNIQUE,
@@ -43,8 +43,8 @@ class CreateEventTable implements MigrationInterface
             is_featured BOOLEAN NOT NULL DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (organizer_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (organizer_id) REFERENCES organizations(id) ON DELETE SET NULL,
             INDEX events_slug_index (slug),
             INDEX events_start_date_index (start_date),
             INDEX events_status (status),

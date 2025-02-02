@@ -18,9 +18,9 @@ class HomeController
     }
     public function home()
     {
-        $query = "SELECT events.*, users.name as organizer_name, users.avatar as organizer_avatar
+        $query = "SELECT events.*, organizations.name as organizer_name, organizations.logo as organizer_logo
         FROM events
-        LEFT JOIN users ON events.organizer_id = users.id
+        LEFT JOIN organizations ON events.organizer_id = organizations.id
         WHERE events.is_featured = 1
         ORDER BY created_at DESC
         LIMIT 10";

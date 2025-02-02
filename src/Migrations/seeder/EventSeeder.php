@@ -74,9 +74,9 @@ class EventSeeder
             $isEventFree = rand(0, 1);
             $events[] = [
                 'created_by' => rand(3, 4),
-                'organizer_id' => rand(3, 4),
+                'organizer_id' => rand(1, 2),
                 'title' => $title . ' #' . $i,
-                'thumbnail' => '/events/event' . rand(1, 2) . '.png',
+                'thumbnail' => 'img/events/event' . rand(1, 2) . '.png',
                 'slug' => strtolower(str_replace(' ', '-', $title)) . '-' . $i,
                 'description' => 'Join us for the exciting ' . strtolower($title) . ' featuring the best of Bangladesh.',
                 'location' => $this->cities[array_rand($this->cities)],

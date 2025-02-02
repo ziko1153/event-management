@@ -5,9 +5,11 @@ use App\Migrations\Database\CreateEventCategoriesTable;
 use App\Migrations\Database\CreateEventCategoryRelationTable;
 use App\Migrations\Database\CreateEventRegistrationTable;
 use App\Migrations\Database\CreateEventTable;
+use App\Migrations\Database\CreateOrganizationTable;
 use App\Migrations\Database\CreateUserTable;
 use App\Migrations\Seeder\EventSeeder;
 use App\Migrations\Seeder\UserSeeder;
+use App\Seeders\OrganizationSeeder;
 use Config\Database;
 
 $db = Database::getInstance();
@@ -15,15 +17,18 @@ $connection = $db->getConnection();
 // List available migrations and seeders
 $availableMigrations = [
     new CreateUserTable($connection),
+    new CreateOrganizationTable($connection),
     new CreateEventTable($connection),
     new CreateEventCategoriesTable($connection),
     new CreateEventCategoryRelationTable($connection),
-    new CreateEventRegistrationTable($connection)
+    new CreateEventRegistrationTable($connection),
+
 ];
 
 $availableSeeders = [
     new UserSeeder,
-    new EventSeeder
+    new OrganizationSeeder,
+    new EventSeeder,
 ];
 
 function rollback($availableMigrations)

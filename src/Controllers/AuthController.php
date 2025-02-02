@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Enums\RoleEnum;
+use App\Model\Organization;
 use App\Service\ValidationService;
 use App\Service\AuthService;
 
@@ -9,11 +11,13 @@ class AuthController
 {
     private ValidationService $validator;
     private AuthService $authService;
+    private Organization $organizerModel;
 
     public function __construct()
     {
         $this->validator = new ValidationService();
         $this->authService = new AuthService();
+        $this->organizerModel = new Organization();
     }
 
     public function showLogin(): void
@@ -39,8 +43,6 @@ class AuthController
             header('Location: /login');
             exit;
         }
-
-        // dd($params);
 
         $_SESSION['success'] = 'Login successful!';
         $this->redirectBasedOnRole($params['redirect'] ?? null);
@@ -109,8 +111,9 @@ class AuthController
             exit;
         }
 
-        if ($this->authService->initiatePasswordReset($params['email'])) {
-            $_SESSION['success'] = 'Password reset link has been sent to your email';
+        if ($link = $this->authService->initiatePasswordReset($params['email'])) {
+            // TODO: Currently email service disable so i am just send link for demo, it will be removed in production 
+            $_SESSION['success'] = 'Password reset link has been sent to your email, for demo purpose here is the link. <a href=' . $link . '> Click Here</a>';
             header('Location: /login');
             exit;
         }
@@ -173,6 +176,9 @@ class AuthController
         ];
 
         $role = $_SESSION['user']['role'] ?? 'user';
+        if ($role == RoleEnum::ORGANIZER->value) {
+            $_SESSION['user']['organizer'] = $this->organizerModel->findByColumn('user_id', $_SESSION['user']['id']);
+        }
         $redirectUrl = $roleRedirects[$role] ?? '/';
 
         header('Location: ' . $redirectUrl);

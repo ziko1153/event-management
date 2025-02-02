@@ -9,7 +9,7 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-4">
-                            <img src="/img<?= $registration['thumbnail'] ?>" class="img-fluid rounded"
+                            <img src="/<?= $registration['thumbnail'] ?>" class="img-fluid rounded"
                                 alt="<?= $registration['title'] ?>">
                         </div>
                         <div class="col-md-8">

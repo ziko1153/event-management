@@ -122,12 +122,13 @@
                             </a>
                         </li>
                         <?php if ($_SESSION['user']['role'] === 'admin'): ?>
-                            <li class="nav-item">
+                            <!-- TODO: IN FUTURE -->
+                            <!-- <li class="nav-item">
                                 <a class="nav-link <?= strpos($view, 'admin/categories') !== false ? 'active' : '' ?>"
                                     href="/admin/categories">
                                     <i class="bi bi-grid"></i> Categories
                                 </a>
-                            </li>
+                            </li> -->
                             <li class="nav-item">
                                 <a class="nav-link <?= strpos($view, 'admin/users') !== false ? 'active' : '' ?>"
                                     href="/admin/users">

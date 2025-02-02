@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Model\Event;
 use App\Model\User;
 use Config\Database;
+use App\Model\Organization;
 
 class EventService
 {
@@ -12,6 +13,7 @@ class EventService
     private ImageService $imageService;
     private Database $db;
     private \PDO $connection;
+    private Organization $organizationModel;
 
     public function __construct()
     {
@@ -19,6 +21,7 @@ class EventService
         $this->imageService = new ImageService(__DIR__ . '/../../public/img/events/');
         $this->db = Database::getInstance();
         $this->connection = $this->db->getConnection();
+        $this->organizationModel = new Organization();
     }
 
     public function getEventsList(array $filters, int $page = 1, int $perPage = 10): array
@@ -66,21 +69,19 @@ class EventService
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'DESC';
 
-        $allowedSortFields = ['title', 'created_at', 'start_date', 'status'];
+        $allowedSortFields = ['registration_deadline', 'start_date', 'end_date'];
         $sort = in_array($sort, $allowedSortFields) ? $sort : 'created_at';
         $order = strtoupper($order) === 'ASC' ? 'ASC' : 'DESC';
 
         $query = "SELECT 
                     events.*,
-                    users.name as organizer_name
+                    organizations.name as organizer_name
                  FROM events
-                 LEFT JOIN users ON events.organizer_id = users.id
+                 LEFT JOIN organizations ON events.organizer_id = organizations.id
                  WHERE " . implode(' AND ', $whereConditions) . "
                  ORDER BY events.$sort $order
                  LIMIT :limit OFFSET :offset";
 
-
-        // dd($query);
 
 
         $countQuery = "SELECT COUNT(*) as total 
@@ -92,7 +93,6 @@ class EventService
         $params[':limit'] = $perPage;
         $params[':offset'] = $offset;
 
-        // dd([$query, $params]);
         $events = $this->eventModel->executeRawQuery($query, $params);
 
 
@@ -159,7 +159,7 @@ class EventService
                 $oldThumbnail = $event['thumbnail'];
                 $data['thumbnail'] = $this->imageService->uploadImage($file);
 
-                if ($oldThumbnail) {
+                if ($oldThumbnail && !in_array(basename($oldThumbnail), ['event1.png', 'event2.png'])) {
                     $this->imageService->deleteImage($oldThumbnail);
                 }
             }
@@ -203,7 +203,7 @@ class EventService
 
             $this->eventModel->delete($event['id']);
 
-            if ($event['thumbnail']) {
+            if ($event['thumbnail'] && !in_array(basename($event['thumbnail']), ['event1.png', 'event2.png'])) {
                 $this->imageService->deleteImage($event['thumbnail']);
             }
 
@@ -241,23 +241,20 @@ class EventService
             return ['success' => false, 'message' => 'Please enter at least 3 characters'];
         }
 
-        $query = "SELECT id, name, email 
-                 FROM users 
-                 WHERE role = 'organizer' 
-                 AND (name LIKE ? OR email LIKE ?)
-                 LIMIT 10";
-
-        $searchTerm = "%{$search}%";
-
         try {
-            $stmt = $this->connection->prepare($query);
-            $stmt->execute([$searchTerm, $searchTerm]);
-            $organizers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $query = "SELECT organizations.id, organizations.name,users.email FROM organizations
+            join users on users.id  = organizations.user_id
+             WHERE organizations.name LIKE :search LIMIT 10";
+            $params = [':search' => "%{$search}%"];
+
+            $organizers = $this->organizationModel->executeRawQuery($query, $params);
+
             return [
                 'success' => true,
                 'organizers' => $organizers
             ];
         } catch (\Exception $e) {
+
             return [
                 'success' => false,
                 'message' => 'Failed to fetch organizers'
