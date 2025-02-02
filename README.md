@@ -95,6 +95,16 @@ chmod 644 .env
 ```bash
 php -S localhost:8000 -t public
 ```
+## (Optional) For Share Hosting Using this in Public folder, create a file .htaccess
+```bash
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redirect all requests to index.php
+RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+
+```
 ## (optional)  Rollback all Data 
 ```bash
 php migrate.php --rollback
