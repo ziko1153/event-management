@@ -21,19 +21,23 @@ class AuthService
 
     public function login(string $email, string $password, bool $remember = false): bool
     {
-        $user = $this->userModel->findByColumn('email', $email);
+        $user = $this->userModel->findWithQuery(conditions: [
+            'email' => $email,
+            'status' => 1
+        ]);
 
-        if (!$user || !password_verify($password, $user['password'])) {
+
+        if (!isset($user[0]) || !password_verify($password, $user[0]['password'])) {
             return false;
         }
 
         if ($remember) {
             $token = bin2hex(random_bytes(32));
-            $this->userModel->update($user['id'], ['remember_token' => $token]);
+            $this->userModel->update($user[0]['id'], ['remember_token' => $token]);
             setcookie('remember_token', $token, time() + (86400 * 30), '/');
         }
 
-        $_SESSION['user'] = $user;
+        $_SESSION['user'] = $user[0];
         return true;
     }
 
@@ -43,7 +47,7 @@ class AuthService
         setcookie('remember_token', '', time() - 3600, '/');
     }
 
-    public function initiatePasswordReset(string $email): bool
+    public function initiatePasswordReset(string $email): bool | string
     {
         $user = $this->userModel->findByColumn('email', $email);
         if (!$user) {
@@ -59,7 +63,7 @@ class AuthService
         ])) {
             $resetLink = env('APP_URL') . "/reset-password?token=" . $token;
             // TODO: Implement email sending logic in  future 
-            return true;
+            return $resetLink;
         }
         return false;
     }

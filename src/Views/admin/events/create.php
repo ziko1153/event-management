@@ -93,9 +93,9 @@
 
                 <div class="col-md-6">
                     <div class="form-check">
-                        <input type="checkbox" name="is_featured" class="form-check-input" value="1"
+                        <input id="is_featured" type="checkbox" name="is_featured" class="form-check-input" value="1"
                             <?= ($_SESSION['old']['is_featured'] ?? '') ? 'checked' : '' ?>>
-                        <label class="form-check-label">Featured Event</label>
+                        <label for="is_featured" class="form-check-label">Featured Event</label>
                     </div>
                 </div>
 

@@ -238,10 +238,10 @@
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-info"
-                                        onclick="window.showAttendees(${event.id})">
+                                <a type="button" class="btn btn-sm btn-outline-info"
+                                        href="/admin/events/${event.slug}/attendees">
                                     <i class="bi bi-people"></i>
-                                </button>
+                                </a>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                         onclick="window.deleteEvent('${event.slug}')">
                                     <i class="bi bi-trash"></i>

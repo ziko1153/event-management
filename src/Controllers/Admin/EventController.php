@@ -8,6 +8,7 @@ use App\Model\Event;
 use App\Enums\EventTypeEnum;
 use App\Service\EventService;
 use App\Enums\EventStatusEnum;
+use App\Model\Organization;
 use App\Service\ValidationService;
 
 class EventController extends BaseController
@@ -83,7 +84,7 @@ class EventController extends BaseController
     {
         $rules = [
             'title' => ['required', 'min:3'],
-            'organizer_id' => ['required', 'exists:users,id,role,organizer'],
+            'organizer_id' => ['required', 'exists:organizations,id'],
             'description' => ['required'],
             'start_date' => ['required', 'date', 'after:registration_deadline'],
             'end_date' => ['required', 'date', 'after:start_date'],
@@ -166,6 +167,74 @@ class EventController extends BaseController
         $_SESSION['success'] = $result['message'];
 
         $this->sendSuccess($result['message'], '/admin/events');
+        exit;
+    }
+
+    public function attendees(array $params): void
+    {
+        $event = $this->eventModel->findByColumn('slug', $params['slug']);
+        if (!$event) {
+            $_SESSION['error'] = 'Event not found';
+            header('Location: /admin/events');
+            exit;
+        }
+
+        $query = "SELECT users.*, event_registrations.*
+                 FROM users 
+                 INNER JOIN event_registrations ON users.id = event_registrations.user_id 
+                 WHERE event_registrations.event_id = :event_id";
+
+        $attendees = $this->eventModel->executeRawQuery($query, [':event_id' => $event['id']]);
+
+        view('admin/events/attendees', [
+            'title' => 'Event Attendees',
+            'event' => $event,
+            'attendees' => $attendees
+        ], 'admin');
+    }
+
+    public function downloadAttendees(array $params): void
+    {
+        $event = $this->eventModel->findByColumn('slug', $params['slug']);
+        if (!$event) {
+            $_SESSION['error'] = 'Event not found';
+            header('Location: /admin/events');
+            exit;
+        }
+
+        $query = "SELECT users.name,users.email,users.phone,users.address,er.registered_at,er.payment_status, er.amount, er.payment_method
+                 FROM users 
+                 INNER JOIN event_registrations as er ON users.id = er.user_id 
+                 WHERE er.event_id = :event_id";
+
+        $attendees = $this->eventModel->executeRawQuery($query, [':event_id' => $event['id']]);
+
+        if (!count($attendees)) {
+            $this->sendError('No Attendee Found');
+            exit;
+        }
+
+        $filename = "attendees-{$event['slug']}-" . date('Y-m-d') . ".csv";
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['Name', 'Email', 'Phone', 'Address', 'Registration Date', 'Payment Status', 'Amount', 'Payment Method']);
+
+        foreach ($attendees as $attendee) {
+            fputcsv($output, [
+                $attendee['name'],
+                $attendee['email'],
+                $attendee['phone'],
+                $attendee['address'],
+                date('Y-m-d H:i:s', strtotime($attendee['registered_at'])),
+                $attendee['payment_status'],
+                $attendee['amount'],
+                $attendee['payment_method']
+            ]);
+        }
+
+        fclose($output);
         exit;
     }
 
