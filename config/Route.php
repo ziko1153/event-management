@@ -4,6 +4,7 @@ namespace Config;
 
 use App\Controllers\Admin\AdminController;
 use App\Controllers\Admin\EventController;
+use App\Controllers\Admin\ProfileController;
 use App\Controllers\User\UserEventController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\UserMiddleware;
@@ -77,12 +78,15 @@ $router->post('/admin/users', [AdminController::class, 'storeUser'])->middleware
 $router->post('/admin/users/{id}/update', [AdminController::class, 'updateUser'])->middleware([AuthMiddleware::class, OnlyAdminMiddleware::class]);
 $router->post('/admin/users/{id}/delete', [AdminController::class, 'deleteUser'])->middleware([AuthMiddleware::class, OnlyAdminMiddleware::class]);
 
-
-// Admin profile routes
-$router->get('/admin/profile', [AdminController::class, 'profile'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
-$router->post('/admin/profile', [AdminController::class, 'updateProfile'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
-$router->get('/admin/profile/password', [AdminController::class, 'changePassword'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
-$router->post('/admin/profile/password', [AdminController::class, 'updatePassword'])->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+// Admin Profile Routes
+$router->get('/admin/profile', [ProfileController::class, 'show'])
+    ->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/profile', [ProfileController::class, 'update'])
+    ->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->get('/admin/profile/password', [ProfileController::class, 'showPasswordForm'])
+    ->middleware([AuthMiddleware::class, AdminMiddleware::class]);
+$router->post('/admin/profile/password', [ProfileController::class, 'updatePassword'])
+    ->middleware([AuthMiddleware::class, AdminMiddleware::class]);
 
 
 

@@ -154,7 +154,7 @@ class UserService extends BaseService
 
             $updateData = [
                 'name' => $data['name'],
-                'phone' => $data['phone'] ?? null,
+                'phone' => empty($data['phone']) ? null : $data['phone'],
                 'address' => $data['address'] ?? null,
             ];
 
@@ -244,7 +244,41 @@ class UserService extends BaseService
             return ['success' => true, 'message' => 'User deleted successfully'];
         } catch (\Exception $e) {
             $this->connection->rollBack();
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+    public function updatePassword(int $userId, array $data): array
+    {
+        try {
+            $user = $this->userModel->findById($userId);
+
+            if (!$user) {
+                return ['success' => false, 'message' => 'User not found'];
+            }
+
+            if (!password_verify($data['current_password'], $user['password'])) {
+                return ['success' => false, 'message' => 'Current password is incorrect'];
+            }
+
+            $updateData = [
+                'password' => password_hash($data['password'], PASSWORD_BCRYPT)
+            ];
+
+            $success = $this->userModel->update($userId, $updateData);
+
+            if (!$success) {
+                return ['success' => false, 'message' => 'Failed to update password'];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Password updated successfully'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Something went wrong while updating password'
+            ];
         }
     }
 }

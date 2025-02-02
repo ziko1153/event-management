@@ -54,7 +54,7 @@ class UserProfileController extends BaseController
             }
 
             $updateData = array_filter([
-                'phone' => $params['phone'] ?? null,
+                'phone' => empty($params['phone']) ? null : $params['phone'],
                 'name' => $params['name'] ?? null,
                 'address' => $params['address'] ?? null,
                 'password' => !empty($params['password'])
