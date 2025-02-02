@@ -80,7 +80,14 @@ class RouterService
             }
         }
 
-        $allParams = array_merge($params, $queryParams, $postParams);
+        // Clean up parameters before merging
+        $allParams = array_filter(
+            array_merge($params, $queryParams, $postParams),
+            function ($key) use ($uri) {
+                return $key !== $uri;
+            },
+            ARRAY_FILTER_USE_KEY
+        );
         
         $this->runMiddleware($route['middleware'], $allParams);
         $this->executeHandler($route['action'], $allParams);
@@ -152,6 +159,10 @@ class RouterService
                 $key = $matches[1];
                 $params[$key] = $uriSegments[$index] ?? null;
             }
+        }
+
+        if (isset($params[$uri])) {
+            unset($params[$uri]);
         }
 
         return $params;
