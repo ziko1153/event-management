@@ -16,7 +16,8 @@ class ValidationService
 
         foreach ($rules as $field => $fieldRules) {
 
-            if (in_array('nullable', $fieldRules) && empty($this->data[$field] ?? null)) {
+            $isAnyFieldIsEmpty  = empty($this->data[$field] ?? null) && empty($_FILES[$field]['name'] ?? null);
+            if (in_array('nullable', $fieldRules) &&  $isAnyFieldIsEmpty) {
                 continue;
             }
 
@@ -152,6 +153,13 @@ class ValidationService
                     $this->addError($field, "The $field must match " . str_replace('_', ' ', $parameter));
                     return false;
                 }
+
+                break;
+            case 'url':
+                if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                    $this->addError($field, "The $field must be a valid URL");
+                    return false;
+                }
                 break;
         }
 
@@ -164,7 +172,7 @@ class ValidationService
             return true;
         }
 
-        [$table, $excludeId] = array_pad(explode(',', $parameter), 2, null);
+        [$table, $column, $excludeId] = array_pad(explode(',', $parameter), 3, null);
 
         if (!$table) {
             $this->addError($field, 'Invalid table name');
@@ -173,7 +181,7 @@ class ValidationService
 
         try {
             $db = Database::getInstance();
-            $query = "SELECT COUNT(*) FROM {$table} WHERE {$field} = :value";
+            $query = "SELECT COUNT(*) FROM {$table} WHERE {$column} = :value";
             $params = [':value' => $value];
 
             if ($excludeId) {
