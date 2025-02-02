@@ -68,12 +68,13 @@ class UserEventController extends BaseController
         AND events.status = :status
         ";
 
-        $params[':slug'] = $params['slug'];
-        $params[':status'] = EventStatusEnum::PUBLISHED->value;
+        $queryParam = [];
+        $queryParam[':slug'] = $params['slug'];
+        $queryParam[':status'] = EventStatusEnum::PUBLISHED->value;
 
 
 
-        $event = $this->eventModel->executeRawQuery($query, $params);
+        $event = $this->eventModel->executeRawQuery($query, $queryParam);
 
         if (!$event) {
             $_SESSION['error'] = 'Event not found';
