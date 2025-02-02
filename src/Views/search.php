@@ -8,7 +8,6 @@
                     <div class="card-body">
                         <h5 class="card-title mb-3">Filter Events</h5>
                         <form id="filterForm" method="GET" action="/events/search">
-                            <!-- Preserve search keyword if exists -->
 
                             <div class="mb-3">
                                 <label class="form-label">Keyword</label>
@@ -33,12 +32,12 @@
                                 $selectedTypes = $_GET['types'] ?? [];
                                 foreach ($types as $type):
                                 ?>
-                                    <div class="form-check">
-                                        <input id="<?= $type ?>" type="checkbox" name="types[]" value="<?= $type ?>"
-                                            class="form-check-input"
-                                            <?= in_array($type, $selectedTypes) ? 'checked' : '' ?>>
-                                        <label for="<?= $type ?>" class="form-check-label"><?= ucfirst($type) ?></label>
-                                    </div>
+                                <div class="form-check">
+                                    <input id="<?= $type ?>" type="checkbox" name="types[]" value="<?= $type ?>"
+                                        class="form-check-input"
+                                        <?= in_array($type, $selectedTypes) ? 'checked' : '' ?>>
+                                    <label for="<?= $type ?>" class="form-check-label"><?= ucfirst($type) ?></label>
+                                </div>
                                 <?php endforeach; ?>
                             </div>
 
@@ -89,68 +88,75 @@
                 </div>
 
                 <div class="row g-4" id="eventsGrid">
+                    <?php if (empty($events)): ?>
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-info">
+                            <i class="bi bi-calendar-x fs-4 d-block mb-2"></i>
+                            <h4>No Events Found</h4>
+                            <p class="mb-0">Try adjusting your search criteria or filters</p>
+                        </div>
+                    </div>
+                    <?php else: ?>
                     <?php foreach ($events as $event): ?>
-                        <div class="col-md-6">
-                            <div class="card h-100 event-card border-0 shadow-sm">
-                                <div class="row g-0">
-                                    <div class="col-md-4 position-relative">
-                                        <img src="/<?= $event['thumbnail'] ?>"
-                                            class="img-fluid h-100 object-fit-cover rounded-start"
-                                            alt="<?= $event['title'] ?>">
-                                        <?php if ($event['is_featured']): ?>
-                                            <div class="featured-badge">
-                                                <i class="bi bi-star-fill"></i> Featured
-                                            </div>
-                                        <?php endif; ?>
+                    <div class="col-md-6">
+                        <div class="card h-100 event-card border-0 shadow-sm">
+                            <div class="row g-0">
+                                <div class="col-md-4 position-relative">
+                                    <img src="/<?= $event['thumbnail'] ?>"
+                                        class="img-fluid h-100 object-fit-cover rounded-start"
+                                        alt="<?= $event['title'] ?>">
+                                    <?php if ($event['is_featured']): ?>
+                                    <div class="featured-badge">
+                                        <i class="bi bi-star-fill"></i> Featured
                                     </div>
-                                    <div class="col-md-8">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between mb-2">
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
 
 
-                                                <span
-                                                    class="badge bg-<?= \App\Enums\EventTypeEnum::getTypeColor($event['event_type']) ?>">
-                                                    <?= ucfirst($event['event_type']) ?>
-                                                </span>
-                                                <span
-                                                    class="price-tag <?= $event['ticket_price'] > 0 ? 'bg-primary' : 'bg-success' ?>">
-                                                    <?= $event['ticket_price'] > 0 ? '৳ ' . number_format($event['ticket_price'], 2) : 'Free' ?>
-                                                </span>
-                                            </div>
+                                            <span
+                                                class="badge bg-<?= \App\Enums\EventTypeEnum::getTypeColor($event['event_type']) ?>">
+                                                <?= ucfirst($event['event_type']) ?>
+                                            </span>
+                                            <span
+                                                class="price-tag <?= $event['ticket_price'] > 0 ? 'bg-primary' : 'bg-success' ?>">
+                                                <?= $event['ticket_price'] > 0 ? '৳ ' . number_format($event['ticket_price'], 2) : 'Free' ?>
+                                            </span>
+                                        </div>
 
-                                            <h5 class="card-title mb-1"><?= $event['title'] ?></h5>
-                                            <p class="text-muted small mb-2">
-                                                <i class="bi bi-calendar3"></i>
-                                                <?= date('M d, Y', strtotime($event['start_date'])) ?>
-                                            </p>
+                                        <h5 class="card-title mb-1"><?= $event['title'] ?></h5>
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-calendar3"></i>
+                                            <?= date('M d, Y', strtotime($event['start_date'])) ?>
+                                        </p>
 
-                                            <div class="capacity-wrapper mb-2">
-                                                <div class="progress" style="height: 5px;">
-                                                    <div class="progress-bar bg-success"
-                                                        style="width: <?= ($event['current_capacity'] / $event['max_capacity']) * 100 ?>%">
-                                                    </div>
+                                        <div class="capacity-wrapper mb-2">
+                                            <div class="progress" style="height: 5px;">
+                                                <div class="progress-bar bg-success"
+                                                    style="width: <?= ($event['current_capacity'] / $event['max_capacity']) * 100 ?>%">
                                                 </div>
                                             </div>
-
-                                            <a href="/events/register/<?= $event['slug'] ?>"
-                                                class="btn btn-sm btn-outline-primary">View Details</a>
                                         </div>
+
+                                        <a href="/events/register/<?= $event['slug'] ?>"
+                                            class="btn btn-sm btn-outline-primary">View Details</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                     <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Pagination -->
                 <nav class="mt-4">
                     <ul class="pagination justify-content-center">
                         <?php
-                        // Preserve all current GET parameters except 'page'
                         $queryParams = $_GET;
                         unset($queryParams['page']);
-
-                        // Special handling for array parameters
                         $queryString = '';
                         foreach ($queryParams as $key => $value) {
                             if (is_array($value)) {
@@ -166,9 +172,9 @@
                         for ($i = 1; $i <= $totalPages; $i++):
                             $pageUrl = "?page={$i}" . ($queryString ? "&{$queryString}" : "");
                         ?>
-                            <li class="page-item <?= $currentPage == $i ? 'active' : '' ?>">
-                                <a class="page-link" href="<?= $pageUrl ?>"><?= $i ?></a>
-                            </li>
+                        <li class="page-item <?= $currentPage == $i ? 'active' : '' ?>">
+                            <a class="page-link" href="<?= $pageUrl ?>"><?= $i ?></a>
+                        </li>
                         <?php endfor; ?>
                     </ul>
                 </nav>
